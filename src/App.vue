@@ -2,67 +2,43 @@
   <div>
     <div class="container">
       <h1>To-Do List</h1>
-      <form @submit.prevent="plusList" class="d-flex">
-        <div class="flex-grow-1 mx-2">
-          <input class="form-control" type="text" v-model="todo" @input="Empty" placeholder="입력하세요.">
-          <div class="mx-2" style="color: red" v-if="todoEmpty">값이 비어있습니다.</div>
-        </div>
-        <div>
-          <button type="submit" class="btn btn-primary">추가</button>
-        </div>
-      </form>
+      <TodoSimple @add-todo="addTodo" />
       <div class="m-2" v-if="!todoList.length">일정이 없습니다 !</div>
-      <div class="card m-2" v-for="(todos,index) in todoList" :key="todos.id">
-        <div class="card-body p-2 d-flex align-items-center">
-          <div class="form-check flex-grow-1">
-            <input class="form-check-input" type="checkbox" v-model="todos.completed">
-            <label class="form-check-label" :class="{done: todos.completed}" >{{todos.subject}}</label>
-          </div>
-          <button class="btn btn-danger btn-sm" @click="deleteThis(index)">삭제</button>
-        </div>
-      </div>
+      <TodoListVue :todoList="todoList" @toggle-todo="toggleTodo" />
     </div>
   </div>
 </template>
  
 <script>
-import { ref, reactive } from 'vue';
+import { reactive } from 'vue';
+import TodoSimple from './components/TodoSimple.vue';
+import TodoListVue from './components/TodoList.vue';
 export default {
+  components: {
+    TodoSimple,
+    TodoListVue
+},
   setup() {
-    const todo = ref("");
+    // const todo = ref("");
     const todoList = reactive([]);
-    const todoEmpty = ref(false); 
 
-    const plusList = () => {
-      if(todo.value === "") {
-        todoEmpty.value = true;
-      }else {
-        todoList.push({
-          id: Date.now(),
-          subject : todo.value,
-          completed: false
-        });
-        todo.value = "";
-      }
-    }
-
-    const Empty = (e) => {
-      if(e.target.value) {
-        todoEmpty.value = false;
-      }
+    const addTodo = (todo) => {
+      todoList.push(todo);
     }
 
     const deleteThis = (i) => {
       todoList.splice(i, 1);
     }
 
+    const toggleTodo = (index) => {
+      todoList[index].completed = !todoList[index].completed;
+    }
+
     return {
-      todo,
-      plusList,
       todoList,
-      todoEmpty,
-      Empty,
-      deleteThis
+      deleteThis,
+      addTodo,
+      toggleTodo
     };
   }
 }
