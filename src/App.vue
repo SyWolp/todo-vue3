@@ -40,19 +40,27 @@ export default {
     const limit = 5;
     const pages = ref(1);
 
-    watch(()=> {
-
-    })
-
-    const numberPage = computed(() => {
-      if(numberOfTodos.value === 0) {
-        return 1;
+    const filteredTodos = computed(()=>{ 
+      if(search.value) {
+        return todoList.filter(todo => {
+          return todo.subject.includes(search.value);
+        })
       }else {
-        console.log('tt')
-        return Math.ceil(numberOfTodos.value/limit);
+        return todoList;
       }
+    });
 
-    })
+    watch(todoList, ()=> {
+      const info = async() => {
+        try {
+          const res = await axios.get(`http://localhost:3000/todoList`);
+          numberOfTodos.value = res.data.length;
+        } catch(err) {
+          console.log(err);
+        }
+      }
+      info();
+    });
     const pageClick = (e) => {
       console.log(e.target.innerHTML);
       if(/[0-9]/.test(e.target.innerHTML)) {
@@ -69,7 +77,7 @@ export default {
       try {
         todoList.splice(0,todoList.length);
         const res = await axios.get(`http://localhost:3000/todoList?_page=${pages.value}&_limit=${limit}`);
-        numberOfTodos.value = res.headers['x-total-count'];
+        // numberOfTodos.value = res.headers['x-total-count'];
         todoList.push(...res.data);
       } catch(err) {
         console.log(err);
@@ -77,18 +85,26 @@ export default {
     };
     getTodo();
 
+    const numberPage = computed(() => {
+      if(numberOfTodos.value === 0) {
+        return 1;
+      }else {
+        return Math.ceil(numberOfTodos.value/limit);
+      }
+    });
+
     const addTodo = async (todo) => {
       try {      
         const res = await axios.post('http://localhost:3000/todoList', {
         subject: todo.subject,
         computed: todo.completed,
       });
-      todoList.push(res.data);
-      if(todoList.length === 6) {
-        console.log('여기')
-        pages.value = numberPage.value;
-        getTodo();
-      }
+        todoList.push(res.data);
+        if(((todoList.length-1) % limit === 0) && todoList.length-1 !== 0) {
+          todoList.splice(0, todoList.length);
+          pages.value = Math.ceil((numberOfTodos.value+1)/limit);
+          getTodo();
+        }
       } catch (err) {
         console.log(err);
       }
@@ -119,16 +135,6 @@ export default {
         console.log(err);
       }
     }
-    
-    const filteredTodos = computed(()=>{ 
-      if(search.value) {
-        return todoList.filter(todo => {
-          return todo.subject.includes(search.value);
-        })
-      }else {
-        return todoList;
-      }
-    })
     return {
       todoList,
       deleteThis,
