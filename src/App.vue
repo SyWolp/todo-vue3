@@ -8,8 +8,8 @@
       <hr />
       <TodoSimple @add-todo="addTodo" />
       <div class="m-2 text-center" v-if="!todoList.length && !search.length">일정이 없습니다 !</div>
-      <div class="m-2 text-center" v-if="!filteredTodos.length && search.length">검색 결과가 없습니다!</div>
-      <TodoListVue :todoList="filteredTodos" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
+      <div class="m-2 text-center" v-if="!todoList.length && search.length">검색 결과가 없습니다!</div>
+      <TodoListVue :todoList="todoList" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
       <hr />
       <nav class="mx-2" aria-label="Page navigation example">
         <ul class="pagination">
@@ -40,15 +40,16 @@ export default {
     const limit = 5;
     const pages = ref(1);
 
-    const filteredTodos = computed(()=>{ 
-      if(search.value) {
-        return todoList.filter(todo => {
-          return todo.subject.includes(search.value);
-        })
-      }else {
-        return todoList;
-      }
-    });
+
+    // const filteredTodos = computed(()=>{ 
+    //   if(search.value) {
+    //     return todoList.filter(todo => {
+    //       return todo.subject.includes(search.value);
+    //     })
+    //   }else {
+    //     return todoList;
+    //   }
+    // });
 
     watch(todoList, ()=> {
       const info = async() => {
@@ -76,7 +77,7 @@ export default {
     const getTodo = async () => {
       try {
         todoList.splice(0,todoList.length);
-        const res = await axios.get(`http://localhost:3000/todoList?_page=${pages.value}&_limit=${limit}`);
+        const res = await axios.get(`http://localhost:3000/todoList?subject_like=${search.value}&_page=${pages.value}&_limit=${limit}`);
         // numberOfTodos.value = res.headers['x-total-count'];
         todoList.push(...res.data);
       } catch(err) {
@@ -115,10 +116,12 @@ export default {
       try {
         await axios.delete('http://localhost:3000/todoList/' + id);
         todoList.splice(index,1);
-        if(todoList.length === 0) { 
-          pages.value = 1;
-          getTodo();
-        }
+        getTodo();
+        console.log(todoList);
+        // if(todoList.length === 0) {
+        //   pages.value = 1;
+        //   getTodo();
+        // }
       } catch (err) {
         console.log(err);
       }
@@ -135,13 +138,20 @@ export default {
         console.log(err);
       }
     }
+
+
+    watch(search, ()=> {
+      pages.value = 1;
+      getTodo();
+    });
+
     return {
       todoList,
       deleteThis,
       addTodo,
       toggleTodo,
       search,
-      filteredTodos,
+      // filteredTodos,
       getTodo,
       numberPage,
       pages,
