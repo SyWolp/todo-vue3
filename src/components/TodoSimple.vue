@@ -19,15 +19,17 @@
     setup(props, { emit }) {
       const todo = ref('');
       const todoEmpty = ref(false); 
-      
       const plusList = () => {
         if(todo.value === "") {
           todoEmpty.value = true;
         }else {
+          const nowDate = new Date();
           emit('add-todo', {
             id: Date.now(),
             subject : todo.value,
-            completed: false
+            Success: false,
+            date: `${nowDate.getFullYear()}년 ${nowDate.getMonth()}월 ${nowDate.getDate()}일`,
+            create: Date.now()
           });
           todo.value = "";
         }
