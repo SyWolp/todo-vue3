@@ -1,7 +1,7 @@
 <template>
-  <div class="alert toastBox" :class="`alert-${type}`" role="alert">
-    {{ message }}
-  </div>
+    <div class="alert toastBox" :class="`alert-${type}`" role="alert">
+      {{ message }}
+    </div>
 </template>
 
 <script>

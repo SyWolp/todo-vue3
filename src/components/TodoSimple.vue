@@ -5,7 +5,7 @@
       <div class="mx-2" style="color: red" v-if="todoEmpty">값이 비어있습니다.</div>
     </div>
     <div>
-      <button type="submit" class="btn btn-primary">추가</button>
+      <button type="submit" class="btn btn-primary">간편 추가</button>
     </div>
   </form>
 </template>

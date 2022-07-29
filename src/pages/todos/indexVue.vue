@@ -1,93 +1,116 @@
 <template>
    <div>
-      <div>
-         <h1 class="text-center my-3">To-Do List</h1>
-         <div class="d-flex">
-            <input class="form-control" type="text" v-model="search" @input="Empty" @keyup.enter="searchEnter"
-               placeholder="검색">
-         </div>
-         <hr />
-         <TodoSimple @add-todo="addTodo" />
-         <div class="m-2 text-center" v-if="!todoList.length && !search.length">일정이 없습니다 !</div>
-         <div class="m-2 text-center" v-if="!todoList.length && search.length">검색 결과가 없습니다!</div>
-         <TodoListVue :todoList="todoList" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
-         <hr />
-         <nav class="mx-2" aria-label="Page navigation example">
-            <ul v-if="numberOfTodos !== 0" class="pagination">
-               <li v-if="pages !== 1 && numberOfTodos > 5" class="page-item">
-                  <a class="page-link" @click="pageClick" href="#">이전</a>
-               </li>
-               <li v-for="page in numberPage" :key="page" class="page-item" :class="pages === page ? 'active' : null">
-                  <a class="page-link" @click="pageClick" href="#">{{ page }}</a>
-               </li>
-               <li v-if="pages !== numberPage && numberOfTodos > 5" class="page-item">
-                  <a class="page-link" @click="pageClick" href="#">다음</a>
-               </li>
-            </ul>
-         </nav>
+      <div class="d-flex justify-content-between my-3">
+         <h1 class="">To-Do List</h1>
+         <button class="btn btn-primary" @click="moveToCreate">일정 생성</button>
       </div>
+      <div class="d-flex">
+         <input class="form-control" type="text" v-model="search" @input="Empty" @keyup.enter="searchEnter"
+            placeholder="검색">
+      </div>
+      <hr />
+      <TodoSimple @add-todo="awsAddtodo" />
+      <div class="m-2 text-center" v-if="!todoList.length && !search.length">일정이 없습니다 !</div>
+      <div class="m-2 text-center" v-if="!todoList.length && search.length">검색 결과가 없습니다!</div>
+      <TodoListVue :todoList="filteredTodos" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
+      <hr />
+      <nav class="mx-2" aria-label="Page navigation example">
+         <ul v-if="numberOfTodos !== 0" class="pagination">
+            <li v-if="prevToken.length !== 0" class="page-item">
+               <a class="page-link" @click="prevPP" href="#">이전</a>
+            </li>
+            <li v-for="page in Math.ceil(numberOfTodos / 5)" :key="page" class="page-item"
+               :class="prevToken.length + 1 === page ? 'active' : null">
+               <a class="page-link" href="#">{{ page }}</a>
+            </li>
+            <li v-if="Math.ceil(numberOfTodos / 5) - 1 !== prevToken.length" class="page-item">
+               <a class="page-link" @click="nextPP" href="#">다음</a>
+            </li>
+         </ul>
+      </nav>
    </div>
+   <transition name="fade">
+      <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
+   </transition>
 </template>
  
 <script>
 import { ref, reactive, computed, watch } from 'vue';
 import TodoSimple from '@/components/TodoSimple.vue';
 import TodoListVue from '@/components/TodoList.vue';
-import axios from 'axios';
-
+import setToast from '@/components/setToast.vue';
+import { createTodoList, deleteTodoList, updateTodoList } from '@/graphql/mutations';
+import { Amplify, API, graphqlOperation } from 'aws-amplify';
+import awsExports from '@/aws-exports';
+Amplify.configure(awsExports);
+import { listTodoLists } from '@/graphql/queries';
+import { useToast } from '@/hooks/toast';
+import { useRouter } from 'vue-router';
 export default {
    components: {
       TodoSimple,
-      TodoListVue
+      TodoListVue,
+      setToast,
    },
    setup() {
+      const router = useRouter();
       const search = ref("");
       const todoList = reactive([]);
       const numberOfTodos = ref(0);
       const limit = 5;
-      const pages = ref(1);
+      const nextNextToken = ref("");
+      const nextToken = ref(null);
+      const prevToken = ref([]);
+      const loading = ref(false);
 
+      const { showToast, toastMessage, toastStatus, showToastChange } = useToast();
 
-      // const filteredTodos = computed(()=>{ 
-      //   if(search.value) {
-      //     return todoList.filter(todo => {
-      //       return todo.subject.includes(search.value);
-      //     })
-      //   }else {
-      //     return todoList;
-      //   }
-      // });
+      const filteredTodos = computed(() => {
+         if (search.value) {
+            return todoList.filter(todo => {
+               return todo.subject.includes(search.value);
+            })
+         } else {
+            return todoList;
+         }
+      });
       watch(todoList, () => {
          const info = async () => {
-            try {
-               const res = await axios.get(`http://localhost:3000/todoList`);
-               numberOfTodos.value = res.data.length;
-               console.log(numberOfTodos.value);
-            } catch (err) {
-               console.log(err);
-            }
+            const res = await API.graphql(graphqlOperation(listTodoLists));
+            numberOfTodos.value = res.data.listTodoLists.items.length;
          }
          info();
       });
-      const pageClick = (e) => {
-         console.log(e.target.innerHTML);
-         if (/[0-9]/.test(e.target.innerHTML)) {
-            pages.value = parseInt(e.target.innerHTML);
-         } else if (e.target.innerHTML === "다음") {
-            pages.value++;
+
+      const nextPP = () => {
+         if ((numberOfTodos.value / 5) - 1 === prevToken.value.length) {
+            nextToken.value = null;
          } else {
-            pages.value--;
+            prevToken.value = [...prevToken.value, nextToken.value];
+            nextToken.value = nextNextToken.value;
+            nextNextToken.value = null;
          }
          getTodo();
-
       }
+      const prevPP = () => {
+         console.log(prevToken.value);
+         nextToken.value = prevToken.value.pop();
+         prevToken.value = [...prevToken.value];
+         nextNextToken.value = null;
+         getTodo();
+      }
+
       const getTodo = async () => {
          try {
             todoList.splice(0, todoList.length);
-            const res = await axios.get(`http://localhost:3000/todoList?_sort=create&_order=desc&subject_like=${search.value}&_page=${pages.value}&_limit=${limit}`);
-            // numberOfTodos.value = res.headers['x-total-count'];
-            todoList.push(...res.data);
+            const res = await API.graphql(graphqlOperation(listTodoLists, { limit, nextToken: nextToken.value}));
+            todoList.push(...res.data.listTodoLists.items);
+            todoList.sort((a,b)=>{
+               return b.create - a.create; 
+            })
+            nextNextToken.value = res.data.listTodoLists.nextToken;
          } catch (err) {
+            showToastChange('잘못 된 접근입니다.', 'danger');
             console.log(err);
          }
       };
@@ -101,66 +124,67 @@ export default {
          }
       });
 
-      const addTodo = async (todo) => {
+      const awsAddtodo = async (todo) => {
          try {
-            const res = await axios.post('http://localhost:3000/todoList', {
-               id: todo.id,
-               subject: todo.subject,
-               Success: todo.Success,
-               date: todo.date,
-               create: todo.create,
-            });
-            todoList.push(res.data);
-            getTodo();
-            // if(((todoList.length-1) % limit === 0) && todoList.length-1 !== 0) {
-            //   todoList.splice(0, todoList.length);
-            //   pages.value = Math.ceil((numberOfTodos.value+1)/limit);
-            //   getTodo();
-            // } 뒤로 추가 할 때
-         } catch (err) {
-            console.log(err);
-         }
-      }
-
-      const deleteThis = async (index) => {
-         const id = todoList[index].id;
-         try {
-            await axios.delete('http://localhost:3000/todoList/' + id);
-            todoList.splice(index, 1);
-            if (!todoList.length && pages.value !== 0) {
+            loading.value = false;
+            if(!loading.value) {
+               await API.graphql(graphqlOperation(createTodoList, { input: todo }));
+               nextToken.value = null;
+               prevToken.value.splice(0,prevToken.value.length);
                getTodo();
-               pages.value--;
-               getTodo();
-            } else {
-               getTodo();
+               loading.value = true;
             }
          } catch (err) {
             console.log(err);
          }
       }
 
-      const toggleTodo = async (index, checked) => {
-         const id = todoList[index].id;
+      const deleteThis = async (index) => {
+         const id = index;
          try {
-            await axios.patch('http://localhost:3000/todoList/' + id, {
-               Success: checked,
-            })
-            todoList[index].Success = checked;
+            await API.graphql(graphqlOperation(deleteTodoList, { input: { id: id } }));
+            getTodo();
+            if(todoList.length === 0) {
+               console.log("1");
+               nextToken.value = null;
+               getTodo();
+            }else {
+               getTodo();
+            }
+            showToastChange("삭제 되었습니다.", 'info');
          } catch (err) {
             console.log(err);
+            showToastChange('잘못 된 접근입니다.', 'danger');
          }
+      }
+
+      const toggleTodo = async (index, checked) => {
+         const id = todoList[index].id;
+         console.log(checked);
+         try {
+            await API.graphql(graphqlOperation(updateTodoList, { input: { id: id, Success: checked } }));
+            todoList[index].Success = checked;
+            getTodo();
+         } catch (err) {
+            console.log(err);
+            showToastChange('잘못 된 접근입니다.', 'danger');
+         }
+      }
+
+      const moveToCreate = () => {
+         router.push({
+            name: "CreateTodo"
+         });
       }
 
       let timeOut = null;
       const searchEnter = () => {
          clearTimeout(timeOut);
-         pages.value = 1;
          getTodo();
       }
       watch(search, () => {
          clearTimeout(timeOut);
          timeOut = setTimeout(() => {
-            pages.value = 1;
             getTodo();
          }, 1000);
       });
@@ -168,16 +192,21 @@ export default {
       return {
          todoList,
          deleteThis,
-         addTodo,
          toggleTodo,
          search,
-         // filteredTodos,
          getTodo,
          numberPage,
-         pages,
-         pageClick,
          numberOfTodos,
-         searchEnter
+         searchEnter,
+         showToast,
+         toastMessage,
+         toastStatus,
+         moveToCreate,
+         awsAddtodo,
+         nextPP,
+         prevPP,
+         prevToken,
+         filteredTodos
       };
    }
 }
@@ -187,5 +216,24 @@ export default {
 .done {
    color: gray;
    text-decoration: line-through;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+   transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+   opacity: 0;
+   transform: translateY(-110%);
+   transition: 0.5s
+}
+
+.fade-enter-to,
+.fade-leave-from {
+   opacity: 1;
+   transform: translateY(0);
+   transition: 0.5s
 }
 </style>

@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-vuetodo-dev-101026-authRole",
+      "UnauthRoleArn": "arn:aws:iam::813673428559:role/amplify-vuetodo-dev-101026-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::813673428559:role/amplify-vuetodo-dev-101026-authRole",
+      "Region": "ap-northeast-2",
+      "DeploymentBucketName": "amplify-vuetodo-dev-101026-deployment",
+      "UnauthRoleName": "amplify-vuetodo-dev-101026-unauthRole",
+      "StackName": "amplify-vuetodo-dev-101026",
+      "StackId": "arn:aws:cloudformation:ap-northeast-2:813673428559:stack/amplify-vuetodo-dev-101026/3b4f68c0-0edb-11ed-aa5e-0625cd7af89a",
+      "AmplifyAppId": "d3s85ueypl2i27"
+    }
+  }
+}

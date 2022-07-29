@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "vuetodo",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "/Users/ad01769991/Desktop/TEST/vue3-project/amplify/backend/api/vuetodo/schema.graphql",
+    "defaultAuthType": {
+      "mode": "API_KEY",
+      "expirationTime": 7
+    }
+  }
+}
