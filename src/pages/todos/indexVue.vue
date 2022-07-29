@@ -143,10 +143,10 @@ export default {
          const id = index;
          try {
             await API.graphql(graphqlOperation(deleteTodoList, { input: { id: id } }));
-            getTodo();
-            if(todoList.length === 0) {
+            if(todoList.length === 1) {
                console.log("1");
                nextToken.value = null;
+               prevToken.value.splice(0,prevToken.value.length);
                getTodo();
             }else {
                getTodo();
