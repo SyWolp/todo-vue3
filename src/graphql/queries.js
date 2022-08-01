@@ -36,3 +36,36 @@ export const listTodoLists = /* GraphQL */ `
     }
   }
 `;
+export const getUserData = /* GraphQL */ `
+  query GetUserData($id: ID!) {
+    getUserData(id: $id) {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listUserData = /* GraphQL */ `
+  query ListUserData(
+    $filter: ModelUserDataFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listUserData(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        username
+        account
+        password
+        state
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

@@ -52,3 +52,51 @@ export const deleteTodoList = /* GraphQL */ `
     }
   }
 `;
+export const createUserData = /* GraphQL */ `
+  mutation CreateUserData(
+    $input: CreateUserDataInput!
+    $condition: ModelUserDataConditionInput
+  ) {
+    createUserData(input: $input, condition: $condition) {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateUserData = /* GraphQL */ `
+  mutation UpdateUserData(
+    $input: UpdateUserDataInput!
+    $condition: ModelUserDataConditionInput
+  ) {
+    updateUserData(input: $input, condition: $condition) {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteUserData = /* GraphQL */ `
+  mutation DeleteUserData(
+    $input: DeleteUserDataInput!
+    $condition: ModelUserDataConditionInput
+  ) {
+    deleteUserData(input: $input, condition: $condition) {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;

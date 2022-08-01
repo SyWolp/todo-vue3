@@ -1,4 +1,5 @@
 <template>
+   <headerCom />
    <div>
       <div class="d-flex justify-content-between my-3">
          <h1 class="">To-Do List</h1>
@@ -20,7 +21,7 @@
                <a class="page-link" @click="prevPP" href="#">이전</a>
             </li>
             <li v-for="page in Math.ceil(numberOfTodos / 5)" :key="page" class="page-item"
-               :class="prevToken.length + 1 === page ? 'active' : null">
+               :class="prevToken.length + 1 === page ? 'active' : null" @click="selectNumber">
                <a class="page-link" href="#">{{ page }}</a>
             </li>
             <li v-if="Math.ceil(numberOfTodos / 5) - 1 !== prevToken.length" class="page-item">
@@ -33,7 +34,7 @@
       <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
    </transition>
 </template>
- 
+
 <script>
 import { ref, reactive, computed, watch } from 'vue';
 import TodoSimple from '@/components/TodoSimple.vue';
@@ -45,15 +46,19 @@ import awsExports from '@/aws-exports';
 Amplify.configure(awsExports);
 import { listTodoLists } from '@/graphql/queries';
 import { useToast } from '@/hooks/toast';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import headerCom from '@/components/headerCom.vue';
+
 export default {
    components: {
       TodoSimple,
       TodoListVue,
       setToast,
+      headerCom
    },
    setup() {
       const router = useRouter();
+      const route = useRoute();
       const search = ref("");
       const todoList = reactive([]);
       const numberOfTodos = ref(0);
@@ -62,9 +67,8 @@ export default {
       const nextToken = ref(null);
       const prevToken = ref([]);
       const loading = ref(false);
-
+      const nowSelectNumber = ref(1);
       const { showToast, toastMessage, toastStatus, showToastChange } = useToast();
-
       const filteredTodos = computed(() => {
          if (search.value) {
             return todoList.filter(todo => {
@@ -83,35 +87,52 @@ export default {
       });
 
       const nextPP = () => {
-         if ((numberOfTodos.value / 5) - 1 === prevToken.value.length) {
-            nextToken.value = null;
-         } else {
-            prevToken.value = [...prevToken.value, nextToken.value];
-            nextToken.value = nextNextToken.value;
-            nextNextToken.value = null;
-         }
+         // if ((numberOfTodos.value / 5) - 1 === prevToken.value.length) {
+         //    nextToken.value = null;
+         //    nowSelectNumber.value++;
+         // } 
+         prevToken.value = [...prevToken.value, nextToken.value];
+         nextToken.value = nextNextToken.value;
+         // nextNextToken.value = null;
+         nowSelectNumber.value++;
          getTodo();
       }
       const prevPP = () => {
-         console.log(prevToken.value);
          nextToken.value = prevToken.value.pop();
          prevToken.value = [...prevToken.value];
          nextNextToken.value = null;
-         getTodo();
+         nowSelectNumber.value--;
+      }
+
+      const selectNumber = (e) => {
+         if (nowSelectNumber.value < parseInt(e.target.innerHTML)) {
+            while (nowSelectNumber.value < parseInt(e.target.innerHTML)) {
+               nextPP();
+            }
+         } else if (nowSelectNumber.value > parseInt(e.target.innerHTML)) {
+            while (nowSelectNumber.value > parseInt(e.target.innerHTML)) {
+               prevPP();
+            }
+            getTodo();
+         }
       }
 
       const getTodo = async () => {
-         try {
-            todoList.splice(0, todoList.length);
-            const res = await API.graphql(graphqlOperation(listTodoLists, { limit, nextToken: nextToken.value}));
-            todoList.push(...res.data.listTodoLists.items);
-            todoList.sort((a,b)=>{
-               return b.create - a.create; 
-            })
-            nextNextToken.value = res.data.listTodoLists.nextToken;
-         } catch (err) {
-            showToastChange('잘못 된 접근입니다.', 'danger');
-            console.log(err);
+         if (route.query.state === "true") {
+            try {
+               const res = await API.graphql(graphqlOperation(listTodoLists, { limit, nextToken: nextToken.value }));
+               todoList.splice(0, 5);
+               todoList.push(...res.data.listTodoLists.items);
+               todoList.sort((a, b) => {
+                  return b.create - a.create;
+               })
+               nextNextToken.value = res.data.listTodoLists.nextToken;
+            } catch (err) {
+               showToastChange('잘못 된 접근입니다.', 'danger');
+               console.log(err);
+            }
+         } else {
+            showToastChange('계정 정보를 찾지 못했습니다.', 'danger');
          }
       };
       getTodo();
@@ -127,10 +148,10 @@ export default {
       const awsAddtodo = async (todo) => {
          try {
             loading.value = false;
-            if(!loading.value) {
+            if (!loading.value) {
                await API.graphql(graphqlOperation(createTodoList, { input: todo }));
                nextToken.value = null;
-               prevToken.value.splice(0,prevToken.value.length);
+               prevToken.value.splice(0, prevToken.value.length);
                getTodo();
                loading.value = true;
             }
@@ -143,12 +164,12 @@ export default {
          const id = index;
          try {
             await API.graphql(graphqlOperation(deleteTodoList, { input: { id: id } }));
-            if(todoList.length === 1) {
+            if (todoList.length === 1) {
                console.log("1");
                nextToken.value = null;
-               prevToken.value.splice(0,prevToken.value.length);
+               prevToken.value.splice(0, prevToken.value.length);
                getTodo();
-            }else {
+            } else {
                getTodo();
             }
             showToastChange("삭제 되었습니다.", 'info');
@@ -172,8 +193,11 @@ export default {
       }
 
       const moveToCreate = () => {
-         router.push({
-            name: "CreateTodo"
+         router.replace({
+            name: "CreateTodo",
+            query: {
+               state: true
+            }
          });
       }
 
@@ -206,7 +230,8 @@ export default {
          nextPP,
          prevPP,
          prevToken,
-         filteredTodos
+         filteredTodos,
+         selectNumber
       };
    }
 }

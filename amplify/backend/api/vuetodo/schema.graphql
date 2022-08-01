@@ -8,3 +8,11 @@ type todoList @model {
     create: Float!
     bodyText: String
 }
+
+type userData @model {
+    id: ID!
+    username: String!
+    account: String!
+    password: String!
+    state: Boolean!
+}

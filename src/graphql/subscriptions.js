@@ -43,3 +43,42 @@ export const onDeleteTodoList = /* GraphQL */ `
     }
   }
 `;
+export const onCreateUserData = /* GraphQL */ `
+  subscription OnCreateUserData {
+    onCreateUserData {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateUserData = /* GraphQL */ `
+  subscription OnUpdateUserData {
+    onUpdateUserData {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteUserData = /* GraphQL */ `
+  subscription OnDeleteUserData {
+    onDeleteUserData {
+      id
+      username
+      account
+      password
+      state
+      createdAt
+      updatedAt
+    }
+  }
+`;

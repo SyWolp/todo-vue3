@@ -1,5 +1,6 @@
 <template>
   <div>
+    <headerCom />
     <h1>Todo Page</h1>
     <form @submit.prevent="saveBtn" v-if="loading === false">
       <div class="row">
@@ -40,6 +41,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import _ from 'lodash';
+import headerCom from '@/components/headerCom.vue';
 import setToast from '@/components/setToast.vue';
 import { useToast } from '@/hooks/toast';
 import { updateTodoList, createTodoList } from '@/graphql/mutations';
@@ -50,7 +52,8 @@ import { getTodoList } from '@/graphql/queries';
 
 export default {
   components: {
-    setToast
+    setToast,
+    headerCom
   },
   props: {
     editing: {
@@ -101,6 +104,9 @@ export default {
     const moveToTodo = () => {
       router.push({
         name: "Todos",
+        query: {
+          state: true
+        }
       })
     };
 

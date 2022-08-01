@@ -16,7 +16,7 @@
   export default {
     emits: ['add-todo'],
 
-    setup(props, { emit }) {
+    setup(s, { emit }) {
       const todo = ref('');
       const todoEmpty = ref(false); 
       const plusList = () => {
