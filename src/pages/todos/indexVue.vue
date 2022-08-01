@@ -1,5 +1,5 @@
 <template>
-   <headerCom />
+   <headerCom :name="headerName" :state="true" />
    <div>
       <div class="d-flex justify-content-between my-3">
          <h1 class="">To-Do List</h1>
@@ -13,7 +13,7 @@
       <TodoSimple @add-todo="awsAddtodo" />
       <div class="m-2 text-center" v-if="!todoList.length && !search.length">일정이 없습니다 !</div>
       <div class="m-2 text-center" v-if="!todoList.length && search.length">검색 결과가 없습니다!</div>
-      <TodoListVue :todoList="filteredTodos" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
+      <TodoListVue :name="headerName" :state="true" :todoList="filteredTodos" @toggle-todo="toggleTodo" @delete-todo="deleteThis" />
       <hr />
       <nav class="mx-2" aria-label="Page navigation example">
          <ul v-if="numberOfTodos !== 0" class="pagination">
@@ -67,6 +67,7 @@ export default {
       const nextToken = ref(null);
       const prevToken = ref([]);
       const loading = ref(false);
+      const headerName = ref("");
       const nowSelectNumber = ref(1);
       const { showToast, toastMessage, toastStatus, showToastChange } = useToast();
       const filteredTodos = computed(() => {
@@ -120,6 +121,7 @@ export default {
       const getTodo = async () => {
          if (route.query.state === "true") {
             try {
+               headerName.value = route.query.username;
                const res = await API.graphql(graphqlOperation(listTodoLists, { limit, nextToken: nextToken.value }));
                todoList.splice(0, 5);
                todoList.push(...res.data.listTodoLists.items);
@@ -196,7 +198,8 @@ export default {
          router.replace({
             name: "CreateTodo",
             query: {
-               state: true
+               state: true,
+               name: route.query.username
             }
          });
       }
@@ -231,7 +234,8 @@ export default {
          prevPP,
          prevToken,
          filteredTodos,
-         selectNumber
+         selectNumber,
+         headerName
       };
    }
 }

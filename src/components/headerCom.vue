@@ -1,9 +1,11 @@
 <template>
   <nav class="navbar navbar-expand-lg bg-light">
     <div class="container-fluid d-flex justify-content-between">
-      <router-link class="navbar-brand" aria-current="page" :to="{ name: 'Todos', query:{state:true} }">Todos
+      <router-link class="navbar-brand" aria-current="page" :to="{ name: 'Todos', query:{state:state, username:name}}">
+      Todos
       </router-link>
-      <ul class="navbar-nav">
+      <ul class="navbar-nav d-flex align-items-center">
+        <li class="nav-item mx-2"><span>{{name}} 님</span></li>
         <li class="nav-item">
           <button class="btn" @click="reload">로그아웃</button>
         </li>
@@ -16,7 +18,8 @@
 import { useRouter } from 'vue-router';
 export default {
   props: {
-    id: String
+    name: String,
+    state: Boolean
   },
 
   setup() {

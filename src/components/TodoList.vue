@@ -1,12 +1,14 @@
 <template>
   <div>
-    <div class="card m-2 w-100" @click="moveToPage(todoList.id)" v-for="(todoList,index) in todoList" :key="todoList.id" style="cursor: pointer">
+    <div class="card m-2 w-100" @click="moveToPage(todoList.id)" v-for="(todoList, index) in todoList" :key="todoList.id"
+      style="cursor: pointer">
       <div class="card-body p-2 d-flex align-items-center">
         <div class="flex-grow-1">
-          <input class="mx-2" type="checkbox" :checked="todoList.Success" @change="toggleTodo(index, $event)" @click.stop>
-          <span class="mx-2" :class="{done: todoList.Success}" >{{todoList.subject}}</span>
+          <input class="mx-2" type="checkbox" :checked="todoList.Success" @change="toggleTodo(index, $event)"
+            @click.stop>
+          <span class="mx-2" :class="{ done: todoList.Success }">{{ todoList.subject }}</span>
         </div>
-        <div class="mx-5">{{todoList.date}}</div>
+        <div class="mx-5">{{ todoList.date }}</div>
         <button class="btn btn-danger btn-sm" @click.stop="openModal(todoList.id)">삭제</button>
       </div>
     </div>
@@ -27,13 +29,15 @@ export default {
     todoList: {
       type: Array,
       required: true
-    }
+    },
+    name: String,
+    state: Boolean
   },
 
   emits: ['toggle-todo', 'delete-todo'],
 
-  setup(props,{ emit }) {
-    const router = useRouter(); 
+  setup(props, { emit }) {
+    const router = useRouter();
     const showDelete = ref(false);
     const todoId = ref(null);
     const toggleTodo = (index, event) => {
@@ -56,14 +60,19 @@ export default {
     };
 
     const moveToPage = (todoId) => {
+      console.log(props.name);
       router.replace({
         name: 'Todo',
         params: {
-          id: todoId,
+          id: todoId
+        },
+        query: {
+          name: props.name,
+          state: props.state
         }
       })
     }
-    
+
     return {
       toggleTodo,
       deleteTodo,
@@ -78,5 +87,4 @@ export default {
 </script>
 
 <style>
-
 </style>

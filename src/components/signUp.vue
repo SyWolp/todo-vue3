@@ -11,12 +11,14 @@
       </div>
       <!-- Email input -->
       <div class="form-outline mb-4">
-        <input type="text" id="form3Example3" class="form-control" v-model="userInfo.account" placeholder="아이디 (4자리 이상)" />
+        <input type="text" id="form3Example3" class="form-control" v-model="userInfo.account"
+          placeholder="아이디 (4자리 이상)" />
       </div>
 
       <!-- Password input -->
       <div class="form-outline mb-4">
-        <input type="password" id="form3Example4" class="form-control" v-model="userInfo.password" placeholder="비밀번호 (4자리 이상)" />
+        <input type="password" id="form3Example4" class="form-control" v-model="userInfo.password"
+          placeholder="비밀번호 (4자리 이상)" />
       </div>
 
       <!-- Submit button -->
@@ -50,22 +52,25 @@ export default {
       state: false
     });
     const router = useRouter();
-  const submitBtn = async () => {
-    if(/[0-9]/.test(userInfo.username)) {
-      showToastChange("이름에 허용되지 않은 값이 있습니다.", "danger");
-    }else if(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(userInfo.account)) {
-      showToastChange("아이디에 한글이 있습니다.", "danger");
-    }
-    if(!/[0-9]/.test(userInfo.username) && !/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(userInfo.account) && userInfo.username && userInfo.account.length >= 4 && userInfo.password.length >= 4) {
-      try {
-        await API.graphql(graphqlOperation(createUserData, { input: {id:userInfo.account, ...userInfo}}));
-        router.push({
-          name: "Home",
-        })
-      }catch(err) {
-        console.log(err);
+    const submitBtn = async () => {
+      if (/[0-9]/.test(userInfo.username)) {
+        showToastChange("이름에 허용되지 않은 값이 있습니다.", "danger");
+      } else if (/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(userInfo.account)) {
+        showToastChange("아이디에 한글이 있습니다.", "danger");
       }
-    }else {
+      if (!/[0-9]/.test(userInfo.username) && !/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(userInfo.account) && userInfo.username && userInfo.account.length >= 4 && userInfo.password.length >= 4) {
+        try {
+          setTimeout(() => {
+            showToastChange("존재하는 아이디 입니다.", "danger");
+          }, 200);
+          await API.graphql(graphqlOperation(createUserData, { input: { id: userInfo.account, ...userInfo } }));
+          router.push({
+            name: "Home",
+          });
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
       // showToastChange("모든 값은 필수 입니다.", "danger");
     }
   }

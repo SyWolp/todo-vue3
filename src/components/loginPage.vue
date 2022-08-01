@@ -50,7 +50,8 @@ export default {
     const { showToast, toastMessage, toastStatus, showToastChange } = useToast();
     const accountInfoValue = reactive({
       id: "",
-      pw: ""
+      pw: "",
+      name: ""
     });
     const loginState = ref(false);
     const saveId = async () => {
@@ -59,7 +60,8 @@ export default {
         router.push({
           name: 'Todos',
           query: {
-            state: loginState.value
+            state: loginState.value,
+            username: accountInfoValue.name
           }
         });
       } catch (err) {
@@ -74,6 +76,7 @@ export default {
         const res = await API.graphql(graphqlOperation(getUserData, { id: accountInfoValue.id }));
         if (res.data.getUserData.account === accountInfoValue.id && res.data.getUserData.password === accountInfoValue.pw) {
           loginState.value = true;
+          accountInfoValue.name = res.data.getUserData.username;
           saveId();
         } else {
           showToastChange('비밀번호가 틀렸습니다.', 'danger');
