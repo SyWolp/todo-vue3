@@ -102,7 +102,7 @@ export default {
     };
     
     const moveToTodo = () => {
-      router.push({
+      router.replace({
         name: "Todos",
         query: {
           state: true

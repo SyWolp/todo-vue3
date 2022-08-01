@@ -56,7 +56,7 @@ export default {
     };
 
     const moveToPage = (todoId) => {
-      router.push({
+      router.replace({
         name: 'Todo',
         params: {
           id: todoId,
