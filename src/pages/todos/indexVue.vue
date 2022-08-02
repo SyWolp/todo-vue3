@@ -31,7 +31,6 @@
       </nav>
    </div>
    <transition name="fade">
-      <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
    </transition>
 </template>
 
@@ -39,7 +38,6 @@
 import { ref, reactive, computed, watch } from 'vue';
 import TodoSimple from '@/components/TodoSimple.vue';
 import TodoListVue from '@/components/TodoList.vue';
-import setToast from '@/components/setToast.vue';
 import { createTodoList, deleteTodoList, updateTodoList } from '@/graphql/mutations';
 import { Amplify, API, graphqlOperation } from 'aws-amplify';
 import awsExports from '@/aws-exports';
@@ -53,7 +51,6 @@ export default {
    components: {
       TodoSimple,
       TodoListVue,
-      setToast,
       headerCom
    },
    setup() {
@@ -245,24 +242,5 @@ export default {
 .done {
    color: gray;
    text-decoration: line-through;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-   transition: opacity 0.5s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-   opacity: 0;
-   transform: translateY(-110%);
-   transition: 0.5s
-}
-
-.fade-enter-to,
-.fade-leave-from {
-   opacity: 1;
-   transform: translateY(0);
-   transition: 0.5s
 }
 </style>

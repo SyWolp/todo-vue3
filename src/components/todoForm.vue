@@ -14,8 +14,8 @@
             <label>상태</label>
             <div>
               <button @click.prevent="statusCheck" class="btn" :class="todo.Success ? 'btn-success' : 'btn-danger'">{{
-                todo.Success ? '완료' : '미완료'
-                }}</button>
+                  todo.Success ? '완료' : '미완료'
+              }}</button>
             </div>
           </div>
         </div>
@@ -31,7 +31,6 @@
     </form>
     <div v-else>로딩 중...</div>
     <transition name="fade">
-      <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
     </transition>
   </div>
 </template>
@@ -40,7 +39,6 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import _ from 'lodash';
-import setToast from '@/components/setToast.vue';
 import { useToast } from '@/hooks/toast';
 import { updateTodoList, createTodoList } from '@/graphql/mutations';
 import { Amplify, API, graphqlOperation } from 'aws-amplify';
@@ -50,7 +48,6 @@ import { getTodoList } from '@/graphql/queries';
 
 export default {
   components: {
-    setToast,
   },
   props: {
     editing: {
@@ -60,7 +57,7 @@ export default {
     state: Boolean,
     name: String
   },
-  setup( props ) {
+  setup(props) {
     const route = useRoute();
     const router = useRouter();
     const todo = ref({
@@ -76,30 +73,30 @@ export default {
     const getTodo = async () => {
       loading.value = true;
       try {
-      const res = await API.graphql(graphqlOperation(getTodoList,{id:route.params.id}));
-      console.log(res);
-      console.log(route.params.id);
-      todo.value = {...res.data.getTodoList};
-      realTodo.value = {...res.data.getTodoList};
-      loading.value = false;
-      } catch(err) {
-          loading.value = false;
-          console.log(err);
-          showToastChange('잘못 된 접근입니다.', 'danger');
-      } 
+        const res = await API.graphql(graphqlOperation(getTodoList, { id: route.params.id }));
+        console.log(res);
+        console.log(route.params.id);
+        todo.value = { ...res.data.getTodoList };
+        realTodo.value = { ...res.data.getTodoList };
+        loading.value = false;
+      } catch (err) {
+        loading.value = false;
+        console.log(err);
+        showToastChange('잘못 된 접근입니다.', 'danger');
+      }
     };
 
-    if( props.editing ) {
+    if (props.editing) {
       getTodo();
-    }else {
+    } else {
       console.log("a");
     }
-    
+
 
     const statusCheck = async () => {
       todo.value.Success = !todo.value.Success;
     };
-    
+
     const moveToTodo = () => {
       router.replace({
         name: "Todos",
@@ -111,13 +108,13 @@ export default {
     };
 
     const ChangeStatus = computed(() => {
-      if( props.editing ) {
+      if (props.editing) {
         return !_.isEqual(todo.value, realTodo.value) && todo.value.subject;
-      }else {
+      } else {
         return todo.value.subject;
       }
     });
-    
+
     const saveBtn = async () => {
       try {
         const res = ref(null);
@@ -131,23 +128,30 @@ export default {
               bodyText: todo.value.bodyText
             }
           }));
-          realTodo.value = {...res.value.data};
+          realTodo.value = { ...res.value.data };
         } else {
           const nowDate = new Date();
-            res.value = await API.graphql(graphqlOperation(createTodoList, {
-              input: {
-                id: Date.now(),
-                subject: todo.value.subject,
-                Success: false,
-                date: `${nowDate.getFullYear()}년 ${nowDate.getMonth()}월 ${nowDate.getDate()}일`,
-                create: Date.now(),
-                bodyText: todo.value.bodyText
-              }
-            }));
+          res.value = await API.graphql(graphqlOperation(createTodoList, {
+            input: {
+              id: Date.now(),
+              subject: todo.value.subject,
+              Success: false,
+              date: `${nowDate.getFullYear()}년 ${nowDate.getMonth() + 1}월 ${nowDate.getDate()}일`,
+              create: Date.now(),
+              bodyText: todo.value.bodyText
+            }
+          }));
           todo.value.subject = "";
           todo.value.bodyText = "";
         }
-      showToastChange("저장 되었습니다.");
+        router.push({
+          name: "Todos",
+          query: {
+            state: true,
+            username: props.name,
+          }
+        });
+        showToastChange("저장 되었습니다.");
       } catch (err) {
         console.log(err);
         showToastChange("잘못 된 접근입니다.", "danger");
@@ -170,5 +174,4 @@ export default {
 </script>
 
 <style>
-
 </style>

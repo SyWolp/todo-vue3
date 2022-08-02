@@ -26,7 +26,6 @@
       <button @click="backHome" class="btn btn-danger btn-block mb-4 mx-2">뒤로가기</button>
     </form>
   </div>
-  <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
 </template>
 
 <script>
@@ -35,13 +34,11 @@ import { Amplify, API, graphqlOperation } from 'aws-amplify';
 import awsExports from '@/aws-exports';
 import { createUserData } from '@/graphql/mutations';
 import { useRouter } from 'vue-router';
-import setToast from '@/components/setToast.vue';
 import { useToast } from '@/hooks/toast';
 Amplify.configure(awsExports);
 
 export default {
   components: {
-    setToast
   },
   setup() {
     const { showToast, toastMessage, toastStatus, showToastChange } = useToast();

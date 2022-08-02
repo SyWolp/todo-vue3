@@ -26,7 +26,6 @@
       </div>
     </form>
   </div>
-  <setToast v-if="showToast" :message="toastMessage" :type="toastStatus" />
 </template>
 
 <script>
@@ -36,13 +35,12 @@ import awsExports from '@/aws-exports';
 Amplify.configure(awsExports);
 import { getUserData } from '@/graphql/queries';
 import { updateUserData } from '@/graphql/mutations';
-import setToast from '@/components/setToast.vue';
 import { useToast } from '@/hooks/toast';
 import { useRouter } from 'vue-router';
 
 export default {
   components: {
-    setToast
+
   },
 
   setup() {

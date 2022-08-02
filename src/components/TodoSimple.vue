@@ -28,7 +28,7 @@
             id: Date.now(),
             subject : todo.value,
             Success: false,
-            date: `${nowDate.getFullYear()}년 ${nowDate.getMonth()}월 ${nowDate.getDate()}일`,
+            date: `${nowDate.getFullYear()}년 ${nowDate.getMonth() + 1}월 ${nowDate.getDate()}일`,
             create: Date.now()
           });
           todo.value = "";
